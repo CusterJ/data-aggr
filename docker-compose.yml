@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  reader: 
+    build: ./reader/
+    restart: always
+    ports:
+      - "8002:8002"
+    depends_on:
+      - storage
+      - es01
+    environment:
+      ES_URL: http://localhost:9200/stats/
+
+  storage: 
+    build: ./storage/
+    restart: always
+    # ports:
+    #   - "8002:8002"
+    depends_on:
+      - es01
+    environment:
+      ES_URL: http://localhost:9200/stats/
+
+  es01:
+    image: elasticsearch:8.5.2
+    ports:
+      - 9200:9200
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms1g
+      - xpack.security.enabled=false
+    mem_limit: 1073741824
+    # ulimits:
+    #   memlock:
+    #     soft: -1
+    #     hard: -1
+    volumes:
+      - es_data:/data/es
+    
+volumes:
+  es_data:
+    driver: local

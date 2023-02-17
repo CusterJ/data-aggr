@@ -1,0 +1,47 @@
+syntax = "proto3";
+package proto;
+
+option go_package = "proto/pb";
+
+message Total {
+    uint32 value = 1;
+    string relation = 2;
+}
+
+message Hits {
+    Total total = 1;
+}
+
+message Buckets {
+    string key = 1;
+    uint32 doc_count = 2;
+}
+
+message SignalCount {
+    uint32 doc_count_error_upper_bound = 1;
+    uint32 sum_other_doc_count = 2;
+    repeated Buckets buckets = 3;
+}
+
+message HistoBuckets {
+    string key_as_string = 1;
+    uint64 key = 2;
+    uint32 doc_count = 3;
+    SignalCount signal_count = 4;
+}
+
+message Histogram {
+    repeated HistoBuckets buckets = 1;
+    string interval = 2;
+}
+
+message Aggregations {
+    Histogram histogram = 1;
+}
+
+message Aggrs {
+    uint32 took = 1;
+    bool timed_out = 2;
+    Hits hits = 4;
+    Aggregations aggregations = 5;
+}

@@ -1,0 +1,53 @@
+syntax = "proto3";
+package proto;
+
+import "aggr.proto";
+
+option go_package = "proto/pb";
+
+message Dataset {
+  string id = 1;
+  int32 time = 2;
+  string signal = 3;
+  string data = 4;
+}
+
+// get stats
+enum Interval {
+  INTERVAL_HOUR = 0;
+  INTERVAL_DAY = 1;
+  INTERVAL_WEEK = 2;
+  INTERVAL_MONTH = 3;
+  INTERVAL_YEAR = 4;
+}
+
+message GetStatsRequest {
+  int32 from_date = 1;
+  int32 to_date = 2;
+  Interval interval = 3;
+}
+
+// get stats resp
+message IntervalData {
+  string interval = 1;
+  string start = 2;
+  string end = 3;
+  bytes data = 4;
+}
+
+
+message GetStatsResponse { Aggrs aggrs = 1; }
+
+// save stats
+message SaveStatsRequest { repeated Dataset dataset = 1; }
+message SaveStatsResponse { bool saved = 1; }
+message SaveStatsStreamRequest { Dataset dataset = 1; }
+
+
+service Stats {
+  rpc GetStats(GetStatsRequest) returns (GetStatsResponse) {}
+
+  rpc SaveStats(SaveStatsRequest) returns (SaveStatsResponse) {}
+
+  rpc SaveStatsStream( stream SaveStatsRequest) returns (SaveStatsResponse) {}
+}
