@@ -6,8 +6,10 @@ import (
 	"log"
 	fr "reader/modules/file_reader"
 	"reader/modules/utils"
-	"reader/proto/pb"
+
 	"time"
+
+	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
 type Server struct {

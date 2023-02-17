@@ -8,9 +8,9 @@ import (
 	"os"
 	fg "reader/modules/file_generator"
 	"reader/modules/utils"
-	"reader/proto/pb"
 	"reader/server"
 
+	"github.com/CusterJ/data-aggr/proto/pb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )

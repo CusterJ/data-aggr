@@ -5,6 +5,7 @@ go 1.19
 require github.com/google/uuid v1.3.0
 
 require (
+	github.com/CusterJ/data-aggr v0.0.0-20230217114458-5edcb0b2c55c // indirect
 	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/sys v0.4.0 // indirect
 	golang.org/x/text v0.6.0 // indirect

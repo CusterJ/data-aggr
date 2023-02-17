@@ -5,8 +5,8 @@ import (
 	"log"
 	"net"
 	"storage/modules/server"
-	"storage/proto/pb"
 
+	"github.com/CusterJ/data-aggr/proto/pb"
 	"google.golang.org/grpc"
 )
 

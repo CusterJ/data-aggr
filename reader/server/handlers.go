@@ -7,9 +7,10 @@ import (
 	"net/http"
 	fg "reader/modules/file_generator"
 	"reader/modules/utils"
-	"reader/proto/pb"
 	"strconv"
 	"strings"
+
+	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
 func (s *Server) GetStats(w http.ResponseWriter, r *http.Request) {

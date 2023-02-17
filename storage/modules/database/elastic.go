@@ -8,9 +8,10 @@ import (
 	"net/http"
 	"storage/modules/domain"
 	"storage/modules/utils"
-	"storage/proto/pb"
 	"strings"
 	"time"
+
+	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
 const esURL string = "http://localhost:9200/stats/"

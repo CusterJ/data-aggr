@@ -5,7 +5,8 @@ import (
 	"log"
 	"storage/modules/database"
 	"storage/modules/utils"
-	"storage/proto/pb"
+
+	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
 type Server struct {
