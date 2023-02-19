@@ -11,16 +11,16 @@ services:
       - es01
     environment:
       ES_URL: http://localhost:9200/stats/
+      RPC_PORT: storage:8090
 
   storage: 
     build: ./storage/
     restart: always
-    # ports:
-    #   - "8002:8002"
     depends_on:
       - es01
     environment:
-      ES_URL: http://localhost:9200/stats/
+      ES_URL: http://es01:9200/stats/
+      RPC_PORT: ":8090"
 
   es01:
     image: elasticsearch:8.5.2

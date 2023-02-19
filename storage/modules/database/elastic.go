@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"os"
 	"storage/modules/domain"
 	"storage/modules/utils"
 	"strings"
@@ -14,12 +15,24 @@ import (
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
-const esURL string = "http://localhost:9200/stats/"
+const esConstURL string = "http://localhost:9200/stats/"
 
-type Elastic struct{}
+type Elastic struct {
+	URL string
+}
 
 func NewElastic() *Elastic {
-	return &Elastic{}
+	envURL := os.Getenv("ES_URL")
+
+	if envURL == "" {
+		return &Elastic{
+			URL: esConstURL,
+		}
+	}
+
+	return &Elastic{
+		URL: envURL,
+	}
 }
 
 func intervalToString(i int) string {
@@ -48,7 +61,8 @@ func intervalToString(i int) string {
 }
 
 func (e *Elastic) CheckIndex() error {
-	res, err := http.Get(esURL)
+	log.Println(e.URL)
+	res, err := http.Get(e.URL)
 	utils.Check(err)
 
 	defer res.Body.Close()
@@ -96,7 +110,7 @@ func (e *Elastic) CreateIndex() error {
 		}
 	  }`)
 
-	req, err := http.NewRequest(http.MethodPut, esURL, strings.NewReader(query))
+	req, err := http.NewRequest(http.MethodPut, e.URL, strings.NewReader(query))
 	utils.Check(err)
 
 	req.Header.Add("content-type", "application/json")
@@ -118,7 +132,7 @@ func (e *Elastic) CreateIndex() error {
 func (e *Elastic) QueryStats(from, to, interval int) (domain.Aggrs, error) {
 	utils.TimeTrack(time.Now(), "QueryStats")
 
-	url := esURL + "_search"
+	url := e.URL + "_search"
 	size := 0
 
 	query := fmt.Sprintf(`{
@@ -189,7 +203,7 @@ func (e *Elastic) BulkWrite(data []*pb.Dataset) error {
 		return err
 	}
 
-	url := esURL + "_bulk"
+	url := e.URL + "_bulk"
 	var payload string
 
 	if len(data) > 0 {

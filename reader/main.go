@@ -16,7 +16,7 @@ import (
 )
 
 // const bufferSize = 1024 * 1024
-const grpcPort string = ":8090"
+const port string = ":8090"
 const defaultFileLength int = 10
 
 func main() {
@@ -35,7 +35,14 @@ func main() {
 	}
 
 	//grpc client connection
-	conn, err := grpc.Dial(grpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	rpcPort := os.Getenv("RPC_PORT")
+	if rpcPort == "" {
+		rpcPort = port
+	}
+
+	fmt.Println("GRPC connecting: ", rpcPort)
+
+	conn, err := grpc.Dial(rpcPort, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	// conn, err := grpc.Dial(grpcPort, grpc.WithInsecure())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
@@ -44,7 +51,6 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewStatsClient(conn)
-	fmt.Println("GRPC connection on port: ", grpcPort)
 
 	// Server init
 	srv := server.NewServer(client)

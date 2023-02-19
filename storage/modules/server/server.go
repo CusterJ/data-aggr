@@ -10,14 +10,14 @@ import (
 )
 
 type Server struct {
-	es *database.Elastic
+	ES *database.Elastic
 	pb.UnimplementedStatsServer
 }
 
 func (s *Server) SaveStats(ctx context.Context, in *pb.SaveStatsRequest) (*pb.SaveStatsResponse, error) {
 	log.Println("Save Stats REQ received: ", len(in.Dataset))
 
-	err := s.es.BulkWrite(in.Dataset)
+	err := s.ES.BulkWrite(in.Dataset)
 	utils.Check(err)
 	if err != nil {
 		return &pb.SaveStatsResponse{
@@ -33,7 +33,7 @@ func (s *Server) SaveStats(ctx context.Context, in *pb.SaveStatsRequest) (*pb.Sa
 func (s *Server) GetStats(ctx context.Context, in *pb.GetStatsRequest) (*pb.GetStatsResponse, error) {
 	log.Println("GetStats REQ received: ", in)
 
-	esres, err := s.es.QueryStats(int(in.FromDate), int(in.ToDate), int(in.Interval))
+	esres, err := s.ES.QueryStats(int(in.FromDate), int(in.ToDate), int(in.Interval))
 	utils.Check(err)
 
 	pbres := new(pb.GetStatsResponse)
