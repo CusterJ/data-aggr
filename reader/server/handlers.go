@@ -9,11 +9,27 @@ import (
 	"reader/modules/utils"
 	"strconv"
 	"strings"
+	"time"
 
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
+func (s *Server) GetMainPage(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, `
+	To generate new file go to
+		/generate - generate new file with fake data 
+	ex ===
+	http://localhost:8002/generate?length=10
+		/stats - get stats
+	ex ===
+	http://localhost:8002/stats?interval=year&start=1595575638&end=1637685638
+
+	intervals are: hour, day, week, month, year
+	`)
+}
+
 func (s *Server) GetStats(w http.ResponseWriter, r *http.Request) {
+	defer utils.TimeTrack(time.Now(), "GetStats handler")
 	interval := r.URL.Query().Get("interval")
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
@@ -47,6 +63,7 @@ func (s *Server) GetStats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
+	defer utils.TimeTrack(time.Now(), "GenerateHandler")
 	fmt.Fprintln(w, "This handler will generate a file of a given length, then read it and save the data to the database. Max length is 50K\n=======")
 
 	length := r.URL.Query().Get("length")
@@ -72,7 +89,7 @@ func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
 	err = fg.GenerateNewFile(lg)
 	utils.Check(err)
 
-	err = s.SaveFile("data.json")
+	err = s.SaveFileStream("data.json")
 	if err != nil {
 		fmt.Fprintf(w, "Save data error: %s", err)
 		return

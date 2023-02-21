@@ -23,7 +23,55 @@ type Stream struct {
 
 func NewJsonStream() Stream {
 	return Stream{
-		stream: make(chan Entry), // try to remove "stream: "
+		stream: make(chan Entry), // try to remove "stream:"
+	}
+}
+
+func (s Stream) Watch() <-chan Entry {
+	return s.stream
+}
+
+func (s Stream) Start(path string) {
+	defer close(s.stream)
+
+	file, err := os.Open(path)
+	if err != nil {
+		s.stream <- Entry{
+			Error: fmt.Errorf("open file: %w", err),
+		}
+		return
+	}
+	defer file.Close()
+
+	decoder := json.NewDecoder(file)
+
+	if _, err := decoder.Token(); err != nil {
+		s.stream <- Entry{
+			Error: fmt.Errorf("decode opening delimiter: %w", err),
+		}
+		return
+	}
+
+	i := 0
+	for decoder.More() {
+		var fooData domain.FooData
+		if err := decoder.Decode(&fooData); err != nil {
+			s.stream <- Entry{
+				Error: fmt.Errorf("decode line  %d: %w", i, err),
+			}
+			return
+		}
+		s.stream <- Entry{FooData: fooData}
+		i++
+	}
+
+	log.Println("fooData readed: ", i)
+
+	if _, err := decoder.Token(); err != nil {
+		s.stream <- Entry{
+			Error: fmt.Errorf("decode closing delimiter: %w", err),
+		}
+		return
 	}
 }
 

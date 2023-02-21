@@ -1,4 +1,4 @@
-This project consists of two services.
+This project consists of two services that communicate using gRPC.
 
 The **READER** service reads a json file with data (or generates a file with fake data) and serves two handlers.
 - /generate - Generates a file ex:`http://localhost:8002/generate?length=500`
@@ -12,6 +12,8 @@ Reads a file at startup using flags. ex:`$ go run . -r=data.json -g -l=10000`
 The stream data is sent via RPC to the second(storage) service.
 
 The **STORAGE** service is a RPC server, it receives data and requests from the first service, processes them and interacts with the database - elastic.
+
+Both services pull their protopackages from the repository from the **PROTO** folder.
 
 Run with docker-compose 
 -

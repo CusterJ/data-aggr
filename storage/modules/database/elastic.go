@@ -185,7 +185,7 @@ func (e *Elastic) QueryStats(from, to, interval int) (domain.Aggrs, error) {
 
 	result, err := io.ReadAll(res.Body)
 	utils.Check(err)
-	log.Printf("func QueryStats res: %+v\n ", res.Status)
+	log.Printf("func QueryStats res: %+v", res.Status)
 
 	esres := &domain.Aggrs{}
 
@@ -197,7 +197,7 @@ func (e *Elastic) QueryStats(from, to, interval int) (domain.Aggrs, error) {
 	return *esres, nil
 }
 
-func (e *Elastic) BulkWrite(data []*pb.Dataset) error {
+func (e *Elastic) BulkWrite(data []*pb.FooData) error {
 	err := e.CheckIndex()
 	if err != nil {
 		return err

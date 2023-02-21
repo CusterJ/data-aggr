@@ -75,6 +75,9 @@ func main() {
 
 	http.HandleFunc("/generate", srv.GenerateHandler)
 	http.HandleFunc("/stats", srv.GetStats)
+	http.HandleFunc("/", srv.GetMainPage)
+
+	// start http server
 	if err := httpServer.ListenAndServe(); err != nil {
 		fmt.Println("httpServer error - exit program")
 		os.Exit(1)
