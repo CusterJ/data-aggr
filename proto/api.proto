@@ -5,7 +5,7 @@ import "aggr.proto";
 
 option go_package = "proto/pb";
 
-message Dataset {
+message FooData {
   string id = 1;
   int32 time = 2;
   string signal = 3;
@@ -27,21 +27,13 @@ message GetStatsRequest {
   Interval interval = 3;
 }
 
-// get stats resp
-message IntervalData {
-  string interval = 1;
-  string start = 2;
-  string end = 3;
-  bytes data = 4;
-}
-
 
 message GetStatsResponse { Aggrs aggrs = 1; }
 
 // save stats
-message SaveStatsRequest { repeated Dataset dataset = 1; }
+message SaveStatsRequest { repeated FooData fooData = 1; }
 message SaveStatsResponse { bool saved = 1; }
-message SaveStatsStreamRequest { Dataset dataset = 1; }
+// message SaveStatsStreamRequest { FooData fooData = 1; }
 
 
 service Stats {
@@ -49,5 +41,5 @@ service Stats {
 
   rpc SaveStats(SaveStatsRequest) returns (SaveStatsResponse) {}
 
-  rpc SaveStatsStream( stream SaveStatsRequest) returns (SaveStatsResponse) {}
+  rpc SaveStatsStream( stream FooData) returns (SaveStatsResponse) {}
 }

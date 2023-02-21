@@ -63,7 +63,7 @@ func (c *statsClient) SaveStatsStream(ctx context.Context, opts ...grpc.CallOpti
 }
 
 type Stats_SaveStatsStreamClient interface {
-	Send(*SaveStatsRequest) error
+	Send(*FooData) error
 	CloseAndRecv() (*SaveStatsResponse, error)
 	grpc.ClientStream
 }
@@ -72,7 +72,7 @@ type statsSaveStatsStreamClient struct {
 	grpc.ClientStream
 }
 
-func (x *statsSaveStatsStreamClient) Send(m *SaveStatsRequest) error {
+func (x *statsSaveStatsStreamClient) Send(m *FooData) error {
 	return x.ClientStream.SendMsg(m)
 }
 
@@ -165,7 +165,7 @@ func _Stats_SaveStatsStream_Handler(srv interface{}, stream grpc.ServerStream) e
 
 type Stats_SaveStatsStreamServer interface {
 	SendAndClose(*SaveStatsResponse) error
-	Recv() (*SaveStatsRequest, error)
+	Recv() (*FooData, error)
 	grpc.ServerStream
 }
 
@@ -177,8 +177,8 @@ func (x *statsSaveStatsStreamServer) SendAndClose(m *SaveStatsResponse) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func (x *statsSaveStatsStreamServer) Recv() (*SaveStatsRequest, error) {
-	m := new(SaveStatsRequest)
+func (x *statsSaveStatsStreamServer) Recv() (*FooData, error) {
+	m := new(FooData)
 	if err := x.ServerStream.RecvMsg(m); err != nil {
 		return nil, err
 	}

@@ -1,22 +1,17 @@
-protoc --proto_path=proto proto/*.proto --go_out=. --go-grpc_out=.
-
-
-protoc --go_out=. --go_opt=paths=source_relative \
-    --go-grpc_out=. --go-grpc_opt=paths=source_relative \
-    pkg/grpc/proto/api.proto
-
-
 export PATH="$PATH:$(go env GOPATH)/bin"
 
+protoc --proto_path=proto proto/*.proto --go_out=. --go-grpc_out=.
+
+protoc \
+--proto_path=${PWD} \
+--go_out=${PWD} \
+  ${PWD}/proto/*.prtoto \
+  ${PWD}/proto/pb
+
+# Use this one
 protoc proto/*.proto \
 --go_out=proto/pb \
 --go_opt=paths=source_relative \
 --go-grpc_out=proto/pb \
 --go-grpc_opt=paths=source_relative \
---proto_path=proto/proto
-
-protoc \
---proto_path=${PWD} \
---go_out=${PWD} \
-  ${PWD}/protos/auth/auth_service.proto \
-  ${PWD}/protos/auth/user.proto
+--proto_path=proto
