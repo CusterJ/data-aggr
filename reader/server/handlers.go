@@ -14,7 +14,7 @@ import (
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
 
-func (s *Server) GetMainPage(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetMainPageHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Fprintf(w, `
 	To generate new file go to
 		/generate - generate new file with fake data 
@@ -28,7 +28,7 @@ func (s *Server) GetMainPage(w http.ResponseWriter, r *http.Request) {
 	`)
 }
 
-func (s *Server) GetStats(w http.ResponseWriter, r *http.Request) {
+func (s *Server) GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	defer utils.TimeTrack(time.Now(), "GetStats handler")
 	interval := r.URL.Query().Get("interval")
 	start := r.URL.Query().Get("start")
@@ -63,19 +63,18 @@ func (s *Server) GetStats(w http.ResponseWriter, r *http.Request) {
 }
 
 func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
-	defer utils.TimeTrack(time.Now(), "GenerateHandler")
 	fmt.Fprintln(w, "This handler will generate a file of a given length, then read it and save the data to the database. Max length is 50K\n=======")
 
 	length := r.URL.Query().Get("length")
 
 	if length == "" {
-		fmt.Fprintln(w, "To generate file add length parametr: /generate?length=100")
+		fmt.Fprintln(w, "To generate file add length parameter: /generate?length=100")
 		return
 	}
 
 	lg, err := strconv.Atoi(length)
 	if err != nil {
-		fmt.Fprintln(w, "Generate and read file error! Add a number for parametr length")
+		fmt.Fprintln(w, "Generate and read file error! Add a number for parameter length")
 		return
 	}
 
@@ -84,7 +83,7 @@ func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	log.Printf("GenerateHandler get = %d\n", lg)
+	// log.Printf("GenerateHandler get = %d\n", lg)
 
 	err = fg.GenerateNewFile(lg)
 	utils.Check(err)

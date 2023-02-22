@@ -74,8 +74,8 @@ func main() {
 	fmt.Println("HTTP server starting on port: ", httpServer.Addr)
 
 	http.HandleFunc("/generate", srv.GenerateHandler)
-	http.HandleFunc("/stats", srv.GetStats)
-	http.HandleFunc("/", srv.GetMainPage)
+	http.HandleFunc("/stats", srv.GetStatsHandler)
+	http.HandleFunc("/", srv.GetMainPageHandler)
 
 	// start http server
 	if err := httpServer.ListenAndServe(); err != nil {

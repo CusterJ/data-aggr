@@ -2,7 +2,6 @@ package file_generator
 
 import (
 	"encoding/json"
-	"fmt"
 	"math/rand"
 	"os"
 	"reader/modules/domain"
@@ -22,15 +21,50 @@ func GenerateNewFile(length int) error {
 
 	byteFile := prepareFileContent(length)
 
-	n, err := f.Write(byteFile)
+	_, err = f.Write(byteFile)
 	utils.Check(err)
 
-	fmt.Println("Bytes written: ", n)
+	// log.Println("Bytes written: ", n)
+	return nil
+}
+
+func GenerateNewBigFile(size int64, filename string) error {
+	f, err := os.Create(filename)
+	utils.Check(err)
+	defer f.Close()
+
+	count := 2
+	f.WriteString("[")
+	var s int64 = 0
+	for s < size {
+		var bt []byte
+		for i := 1; i <= count; i++ {
+			m, err := json.Marshal(newJson())
+			utils.Check(err)
+			bt = append(bt, m...)
+			if i == count {
+				continue
+			}
+			bt = append(bt, ","...)
+		}
+		_, err = f.WriteString(string(bt))
+		utils.Check(err)
+
+		fs, err := f.Stat()
+		utils.Check(err)
+
+		s = fs.Size()
+		if s < size {
+			f.WriteString(",")
+		}
+	}
+	f.WriteString("]")
+
 	return nil
 }
 
 func prepareFileContent(count int) []byte {
-	defer utils.TimeTrack(time.Now(), "prepareFileContent")
+	// defer utils.TimeTrack(time.Now(), "prepareFileContent")
 
 	bt := []byte("[")
 	for i := 1; i <= count; i++ {

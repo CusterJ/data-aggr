@@ -65,7 +65,7 @@ func (s Stream) Start(path string) {
 		i++
 	}
 
-	log.Println("fooData readed: ", i)
+	// log.Println("fooData readed: ", i)
 
 	if _, err := decoder.Token(); err != nil {
 		s.stream <- Entry{
@@ -113,7 +113,7 @@ func ReadFullFile(filename string) ([]domain.FooData, error) {
 	err = json.Unmarshal(dataString, &data)
 	utils.Check(err)
 
-	fmt.Println("Len of file dataset is: ", len(data))
+	// log.Println("Len of file dataset is: ", len(data))
 
 	return data, nil
 }
