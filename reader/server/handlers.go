@@ -34,11 +34,17 @@ func (s *Server) GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	start := r.URL.Query().Get("start")
 	end := r.URL.Query().Get("end")
 
-	fd, err := strconv.Atoi(start)
-	utils.Check(err)
+	sd, err := strconv.Atoi(start)
+	if err != nil {
+		fmt.Fprintf(w, "Invalid start data: %s", err)
+		return
+	}
 
-	td, err := strconv.Atoi(end)
-	utils.Check(err)
+	ed, err := strconv.Atoi(end)
+	if err != nil {
+		fmt.Fprintf(w, "Invalid end data: %s", err)
+		return
+	}
 
 	iv, ok := pb.Interval_value["INTERVAL_"+strings.ToUpper(interval)]
 	if !ok {
@@ -48,17 +54,24 @@ func (s *Server) GetStatsHandler(w http.ResponseWriter, r *http.Request) {
 	log.Printf("interval get %s = %d, start: %s, end: %s\n", interval, iv, start, end)
 
 	res, err := s.sc.GetStats(r.Context(), &pb.GetStatsRequest{
-		FromDate: int32(fd),
-		ToDate:   int32(td),
+		FromDate: int32(sd),
+		ToDate:   int32(ed),
 		Interval: pb.Interval(iv),
 	})
 
-	utils.Check(err)
+	if err != nil {
+		fmt.Fprintf(w, "Get stats data error: %s", err)
+		return
+	}
+
+	b, err := json.Marshal(res.Aggrs)
+	if err != nil {
+		fmt.Fprintf(w, "Marshal stats error: %s", err)
+		return
+	}
 
 	w.Header().Add("content-type", "application/json")
 
-	b, err := json.Marshal(res.Aggrs)
-	utils.Check(err)
 	fmt.Fprintf(w, "%s", b)
 }
 
@@ -86,7 +99,10 @@ func (s *Server) GenerateHandler(w http.ResponseWriter, r *http.Request) {
 	// log.Printf("GenerateHandler get = %d\n", lg)
 
 	err = fg.GenerateNewFile(lg)
-	utils.Check(err)
+	if err != nil {
+		fmt.Fprintf(w, "Generate file error: %s", err)
+		return
+	}
 
 	err = s.SaveFileStream("data.json")
 	if err != nil {

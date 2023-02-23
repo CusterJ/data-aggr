@@ -4,8 +4,6 @@ import (
 	"context"
 	"log"
 	fr "reader/modules/file_reader"
-	"reader/modules/utils"
-	"time"
 
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
@@ -24,10 +22,13 @@ func NewServer(sc pb.StatsClient) *Server {
 func (s *Server) SaveFile(filename string) error {
 	// log.Println("Reading file: ", filename)
 	data, err := fr.ReadFullFile(filename)
-	utils.Check(err)
+	if err != nil {
+		return err
+	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
-	defer cancel()
+	ctx := context.TODO()
+	// ctx, cancel := context.WithTimeout(context.Background(), time.Second*60)
+	// defer cancel()
 
 	rec := new(pb.SaveStatsRequest)
 
@@ -44,7 +45,10 @@ func (s *Server) SaveFile(filename string) error {
 		if i%5001 == 0 {
 			rec.FooData = dataset
 			_, err := s.sc.SaveStats(ctx, rec)
-			utils.Check(err)
+			if err != nil {
+				log.Println("func SaveFile -> SaveStats error: ", err)
+				return err
+			}
 			dataset = nil
 		}
 	}
@@ -52,9 +56,12 @@ func (s *Server) SaveFile(filename string) error {
 	rec.FooData = dataset
 
 	// grpc req
-	_, err = s.sc.SaveStats(ctx, rec)
-	utils.Check(err)
-	// log.Println("SaveStats result: ", res)
+	res, err := s.sc.SaveStats(ctx, rec)
+	if err != nil {
+		return err
+	}
+
+	log.Println("SaveStats result: ", res)
 	return nil
 }
 
@@ -63,15 +70,17 @@ func (s *Server) SaveFileStream(filename string) error {
 	// log.Println("Reading file: ", filename)
 
 	rpc, err := s.sc.SaveStatsStream(context.TODO())
-	utils.Check(err)
-
-	defer rpc.CloseSend()
+	if err != nil {
+		log.Println("rpc SaveStatsStream error: ", err)
+	}
+	// defer rpc.CloseSend()
 
 	stream := fr.NewJsonStream()
 	go func() {
 		for data := range stream.Watch() {
 			if data.Error != nil {
-				log.Println(data.Error)
+				log.Println("go range stream.Watch error: ", data.Error)
+				return
 			}
 
 			err := rpc.Send(&pb.FooData{
@@ -81,7 +90,7 @@ func (s *Server) SaveFileStream(filename string) error {
 				Data:   data.FooData.Data,
 			})
 			if err != nil {
-				log.Println(err)
+				log.Println("SaveStatsStream -> rpc.Send error: ", err)
 				return
 			}
 		}
@@ -89,10 +98,10 @@ func (s *Server) SaveFileStream(filename string) error {
 
 	stream.Start(filename)
 
-	// _, err = rpc.CloseAndRecv()
-	// log.Println("rpc.CloseAndRecv response: ", res)
-	// if err != nil {
-	// 	return err
-	// }
+	res, err := rpc.CloseAndRecv()
+	log.Println("rpc.CloseAndRecv response: ", res)
+	if err != nil {
+		return err
+	}
 	return nil
 }

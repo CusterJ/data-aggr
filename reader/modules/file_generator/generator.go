@@ -5,7 +5,6 @@ import (
 	"math/rand"
 	"os"
 	"reader/modules/domain"
-	"reader/modules/utils"
 	"strconv"
 	"time"
 
@@ -16,31 +15,40 @@ const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
 func GenerateNewFile(length int) error {
 	f, err := os.Create("data.json")
-	utils.Check(err)
+	if err != nil {
+		return err
+	}
+
 	defer f.Close()
 
 	byteFile := prepareFileContent(length)
 
 	_, err = f.Write(byteFile)
-	utils.Check(err)
-
+	if err != nil {
+		return err
+	}
 	// log.Println("Bytes written: ", n)
 	return nil
 }
 
-func GenerateNewBigFile(size int64, filename string) error {
+func GenerateFileBySize(size int64, filename string) error {
 	f, err := os.Create(filename)
-	utils.Check(err)
+	if err != nil {
+		return err
+	}
+
 	defer f.Close()
 
-	count := 2
+	count := 500
 	f.WriteString("[")
 	var s int64 = 0
 	for s < size {
 		var bt []byte
 		for i := 1; i <= count; i++ {
 			m, err := json.Marshal(newJson())
-			utils.Check(err)
+			if err != nil {
+				return err
+			}
 			bt = append(bt, m...)
 			if i == count {
 				continue
@@ -48,10 +56,14 @@ func GenerateNewBigFile(size int64, filename string) error {
 			bt = append(bt, ","...)
 		}
 		_, err = f.WriteString(string(bt))
-		utils.Check(err)
+		if err != nil {
+			return err
+		}
 
 		fs, err := f.Stat()
-		utils.Check(err)
+		if err != nil {
+			return err
+		}
 
 		s = fs.Size()
 		if s < size {
@@ -69,13 +81,19 @@ func prepareFileContent(count int) []byte {
 	bt := []byte("[")
 	for i := 1; i <= count; i++ {
 		m, err := json.Marshal(newJson())
-		utils.Check(err)
+		if err != nil {
+			break
+		}
+
 		bt = append(bt, m...)
+
 		if i == count {
 			continue
 		}
+
 		bt = append(bt, ","...)
 	}
+
 	bt = append(bt, "]"...)
 
 	return bt

@@ -23,7 +23,7 @@ func main() {
 	// start grpc server
 	listener, err := net.Listen("tcp", rpcPort)
 	if err != nil {
-		panic(err)
+		log.Fatal(err)
 	}
 
 	s := grpc.NewServer()
@@ -31,6 +31,11 @@ func main() {
 	fmt.Println("Storage main func start. gRPC server start on port: ", rpcPort)
 
 	elastic := database.NewElastic()
+	err = elastic.CheckIndex()
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	pb.RegisterStatsServer(s, &server.Server{
 		ES:                       elastic,
 		UnimplementedStatsServer: pb.UnimplementedStatsServer{},

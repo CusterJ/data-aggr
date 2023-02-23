@@ -61,19 +61,39 @@ func intervalToString(i int) string {
 }
 
 func (e *Elastic) CheckIndex() error {
-	log.Println(e.URL)
+	log.Println("ES Index Check: ", e.URL)
 	res, err := http.Get(e.URL)
-	utils.Check(err)
+	if err != nil {
+		log.Println("ES Index Check: ", err)
+		return err
+	}
 
 	defer res.Body.Close()
 
 	if res.StatusCode != 200 {
+		log.Printf("ES Index status: %s, creating...", res.Status)
 		err := e.CreateIndex()
 		if err != nil {
 			// return fmt.Errorf("create index error, %s", err)
-			log.Fatal("can't create index: ", err)
+			log.Fatal("ES Index -> can't create index: ", err)
+		}
+		log.Println("ES Index created")
+
+		res, err = http.Get(e.URL)
+		if err != nil {
+			log.Println("ES Index Check: ", err)
+			return err
+		}
+
+		if res.StatusCode == http.StatusOK {
+			log.Println("ES Index status: ", res.Status)
+			return nil
+		} else {
+			return err
 		}
 	}
+
+	log.Println("ES Index status: ", res.Status)
 	return nil
 }
 
@@ -111,16 +131,22 @@ func (e *Elastic) CreateIndex() error {
 	  }`)
 
 	req, err := http.NewRequest(http.MethodPut, e.URL, strings.NewReader(query))
-	utils.Check(err)
+	if err != nil {
+		log.Println("CreateIndex error: ", err)
+		return err
+	}
 
 	req.Header.Add("content-type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
-	utils.Check(err)
+	if err != nil {
+		log.Println("CheckIndex error: ", err)
+		return err
+	}
 
 	defer res.Body.Close()
 
-	log.Println("Create Index status: ", res.Status)
+	log.Println("ES Index Create status: ", res.Status)
 
 	if res.StatusCode != http.StatusOK {
 		return fmt.Errorf("error creating new index, %s", res.Status)
@@ -175,22 +201,36 @@ func (e *Elastic) QueryStats(from, to, interval int) (domain.Aggrs, error) {
 	  }`, size, from, to, intervalToString(interval))
 
 	req, err := http.NewRequest(http.MethodGet, url, strings.NewReader(query))
-	utils.Check(err)
+	if err != nil {
+		log.Println("QueryStats error: ", err)
+		return domain.Aggrs{}, err
+	}
 
 	req.Header.Add("content-type", "application/json")
 
 	res, err := http.DefaultClient.Do(req)
-	utils.Check(err)
+	if err != nil {
+		log.Println("QueryStats error: ", err)
+		return domain.Aggrs{}, err
+	}
+
 	defer res.Body.Close()
 
 	result, err := io.ReadAll(res.Body)
-	utils.Check(err)
+	if err != nil {
+		log.Println("QueryStats -> read Body error: ", err)
+		return domain.Aggrs{}, err
+	}
+
 	log.Printf("func QueryStats res: %+v", res.Status)
 
 	esres := &domain.Aggrs{}
 
 	err = json.Unmarshal(result, &esres)
-	utils.Check(err)
+	if err != nil {
+		log.Println("QueryStats -> Unmarshal json error: ", err)
+		return domain.Aggrs{}, err
+	}
 
 	log.Printf("Total results: %+v, esres.Hits: %d\n", esres.Hits.Total.Value, len(esres.Aggregations.Histogram.HistoBuckets))
 
@@ -198,11 +238,6 @@ func (e *Elastic) QueryStats(from, to, interval int) (domain.Aggrs, error) {
 }
 
 func (e *Elastic) BulkWrite(data []*pb.FooData) error {
-	err := e.CheckIndex()
-	if err != nil {
-		return err
-	}
-
 	url := e.URL + "_bulk"
 	var payload string
 
@@ -211,13 +246,21 @@ func (e *Elastic) BulkWrite(data []*pb.FooData) error {
 		for _, v := range data {
 			id := fmt.Sprintf(`{ "index": { "_id": "%s" }}`, v.Id)
 			b, err := json.Marshal(v)
-			utils.Check(err)
+			if err != nil {
+				log.Println("BulkWrite -> Marshal error: ", err)
+				return err
+			}
+
 			payload += id + "\n" + string(b) + "\n"
 		}
 
 		// fmt.Printf("BulkWrite payload:\n%+v\n", payload)
 		res, err := http.Post(url, "application/json", strings.NewReader(payload))
-		utils.Check(err)
+		if err != nil {
+			log.Println("BulkWrite -> POST error: ", err)
+			return err
+		}
+
 		defer res.Body.Close()
 		log.Println("bulk save data status: ", res.Status)
 	}

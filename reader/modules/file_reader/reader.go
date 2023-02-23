@@ -9,7 +9,6 @@ import (
 	"log"
 	"os"
 	"reader/modules/domain"
-	"reader/modules/utils"
 )
 
 type Entry struct {
@@ -87,7 +86,7 @@ func ReadFileWithStream(filename string) error {
 	d := json.NewDecoder(file)
 
 	if _, err := d.Token(); err != nil {
-		utils.Check(err)
+		log.Println("decode Token error: ", err)
 		return err
 	}
 
@@ -108,13 +107,15 @@ func ReadFullFile(filename string) ([]domain.FooData, error) {
 	var data []domain.FooData
 
 	dataString, err := ioutil.ReadFile(filename)
-	utils.Check(err)
-
+	if err != nil {
+		return nil, err
+	}
 	err = json.Unmarshal(dataString, &data)
-	utils.Check(err)
+	if err != nil {
+		return nil, err
+	}
 
 	// log.Println("Len of file dataset is: ", len(data))
-
 	return data, nil
 }
 
@@ -190,7 +191,6 @@ func ReadFileWithTokens(filename string) error {
 	d := json.NewDecoder(file)
 
 	if _, err := d.Token(); err != nil {
-		utils.Check(err)
 		return err
 	}
 

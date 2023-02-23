@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	fg "reader/modules/file_generator"
-	"reader/modules/utils"
 	"reader/server"
 
 	"github.com/CusterJ/data-aggr/proto/pb"
@@ -31,7 +30,9 @@ func main() {
 	if *generateFile {
 		fmt.Println("Generating file: ", *generateFilelength)
 		err := fg.GenerateNewFile(*generateFilelength)
-		utils.Check(err)
+		if err != nil {
+			log.Println("generate file error", err)
+		}
 	}
 
 	//grpc client connection
@@ -57,8 +58,8 @@ func main() {
 
 	// read json file
 	if *fileName != "" {
-		err := srv.SaveFile(*fileName)
-		utils.Check(err)
+		err := srv.SaveFileStream(*fileName)
+		log.Println("save file stream error: ", err)
 	}
 
 	httpServer := http.Server{

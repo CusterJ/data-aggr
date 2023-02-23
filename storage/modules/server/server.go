@@ -5,7 +5,6 @@ import (
 	"io"
 	"log"
 	"storage/modules/database"
-	"storage/modules/utils"
 
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
@@ -51,7 +50,10 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 
 		if count%1001 == 0 {
 			err := s.ES.BulkWrite(dataSet)
-			utils.Check(err)
+			if err != nil {
+				log.Println("SaveStatsStream -> ES.BulkWrite error: ", err)
+				return err
+			}
 
 			count = 0
 			dataSet = nil
@@ -59,15 +61,18 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 	}
 
 	err := s.ES.BulkWrite(dataSet)
-	utils.Check(err)
+	if err != nil {
+		log.Println("SaveStatsStream -> ES.BulkWrite error: ", err)
+		return err
+	}
 
-	ps.SendAndClose(&pb.SaveStatsResponse{
-		Saved: true,
-	})
-
-	// ps.SendMsg(&pb.SaveStatsResponse{
+	// ps.SendAndClose(&pb.SaveStatsResponse{
 	// 	Saved: true,
 	// })
+
+	ps.SendMsg(&pb.SaveStatsResponse{
+		Saved: true,
+	})
 
 	log.Println("Recieved and saved stream data: ", recvCount)
 
@@ -78,7 +83,13 @@ func (s *Server) SaveStats(ctx context.Context, in *pb.SaveStatsRequest) (*pb.Sa
 	log.Println("Save Stats REQ received: ", len(in.FooData))
 
 	err := s.ES.BulkWrite(in.FooData)
-	utils.Check(err)
+	if err != nil {
+		log.Println("SaveStats -> ES.BulkWrite error: ", err)
+		return &pb.SaveStatsResponse{
+			Saved: false,
+		}, err
+	}
+
 	if err != nil {
 		return &pb.SaveStatsResponse{
 			Saved: false,
@@ -94,8 +105,12 @@ func (s *Server) GetStats(ctx context.Context, in *pb.GetStatsRequest) (*pb.GetS
 	log.Println("GetStats REQ received: ", in)
 
 	esres, err := s.ES.QueryStats(int(in.FromDate), int(in.ToDate), int(in.Interval))
-	utils.Check(err)
-
+	if err != nil {
+		log.Println("SaveStats -> ES.BulkWrite error: ", err)
+		return &pb.GetStatsResponse{
+			Aggrs: &pb.Aggrs{},
+		}, err
+	}
 	pbres := new(pb.GetStatsResponse)
 
 	hb := []*pb.HistoBuckets{}
