@@ -23,13 +23,13 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 		// Get a packet
 		data, err := ps.Recv()
 		if err == io.EOF {
-			log.Printf("Received io.EOF: %#v", data)
+			log.Printf("Save Stats Stream -> Received io.EOF: %#v", data)
 			break
 		}
 
 		// check err while receiving stream data - ps.Recv
 		if err != nil {
-			log.Printf("EXIT => for loop stream recv error: %s \n ", err)
+			log.Printf("Save Stats Stream -> for loop stream recv error: %s \n ", err)
 
 			ps.SendMsg(&pb.SaveStatsResponse{
 				Saved: false,
@@ -51,7 +51,7 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 		if count%1001 == 0 {
 			err := s.ES.BulkWrite(dataSet)
 			if err != nil {
-				log.Println("SaveStatsStream -> ES.BulkWrite error: ", err)
+				log.Println("Save Stats Stream -> ES.BulkWrite error: ", err)
 				return err
 			}
 
