@@ -14,7 +14,7 @@ import (
 
 func BenchmarkSaveFileStream(b *testing.B) {
 	filename := "big.json"
-	file_generator.GenerateFileBySize(1024*10, filename)
+	file_generator.GenerateFileBySize(1024*1024*51, filename)
 	defer os.Remove(filename)
 
 	var rpcPort string = ":8090"
@@ -43,7 +43,7 @@ func BenchmarkSaveFileStream(b *testing.B) {
 
 func BenchmarkSaveFullFile(b *testing.B) {
 	filename := "big.json"
-	file_generator.GenerateFileBySize(1024*10, filename)
+	file_generator.GenerateFileBySize(1024*1024*51, filename)
 	defer os.Remove(filename)
 
 	var rpcPort string = ":8090"
@@ -71,7 +71,7 @@ func BenchmarkSaveFullFile(b *testing.B) {
 
 func BenchmarkSaveFileVsSaveFileStream(b *testing.B) {
 	filename := "big.json"
-	file_generator.GenerateFileBySize(1024*10, filename)
+	file_generator.GenerateFileBySize(1024*1024*10, filename)
 	// defer os.Remove("data.json")
 
 	var rpcPort string = ":8090"

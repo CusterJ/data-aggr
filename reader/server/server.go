@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	fr "reader/modules/file_reader"
+	"sync"
 
 	"github.com/CusterJ/data-aggr/proto/pb"
 )
@@ -56,12 +57,12 @@ func (s *Server) SaveFile(filename string) error {
 	rec.FooData = dataset
 
 	// grpc req
-	res, err := s.sc.SaveStats(ctx, rec)
+	_, err = s.sc.SaveStats(ctx, rec)
 	if err != nil {
 		return err
 	}
 
-	log.Println("SaveStats result: ", res)
+	// log.Println("SaveStats result: ", res)
 	return nil
 }
 
@@ -73,10 +74,13 @@ func (s *Server) SaveFileStream(filename string) error {
 	if err != nil {
 		log.Println("rpc SaveStatsStream error: ", err)
 	}
-	// defer rpc.CloseSend()
+	defer rpc.CloseSend()
 
+	wg := &sync.WaitGroup{}
+	wg.Add(1)
 	stream := fr.NewJsonStream()
 	go func() {
+		defer wg.Done()
 		for data := range stream.Watch() {
 			if data.Error != nil {
 				log.Println("go range stream.Watch error: ", data.Error)
@@ -97,9 +101,10 @@ func (s *Server) SaveFileStream(filename string) error {
 	}()
 
 	stream.Start(filename)
+	wg.Wait()
 
-	res, err := rpc.CloseAndRecv()
-	log.Println("rpc.CloseAndRecv response: ", res)
+	_, err = rpc.CloseAndRecv()
+	// log.Println("rpc.CloseAndRecv response: ", res)
 	if err != nil {
 		return err
 	}

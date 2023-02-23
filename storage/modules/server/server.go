@@ -31,7 +31,7 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 		if err != nil {
 			log.Printf("Save Stats Stream -> for loop stream recv error: %s \n ", err)
 
-			ps.SendMsg(&pb.SaveStatsResponse{
+			ps.SendAndClose(&pb.SaveStatsResponse{
 				Saved: false,
 			})
 
@@ -66,13 +66,13 @@ func (s *Server) SaveStatsStream(ps pb.Stats_SaveStatsStreamServer) error {
 		return err
 	}
 
-	// ps.SendAndClose(&pb.SaveStatsResponse{
-	// 	Saved: true,
-	// })
-
-	ps.SendMsg(&pb.SaveStatsResponse{
+	ps.SendAndClose(&pb.SaveStatsResponse{
 		Saved: true,
 	})
+
+	// ps.SendMsg(&pb.SaveStatsResponse{
+	// 	Saved: true,
+	// })
 
 	log.Println("Recieved and saved stream data: ", recvCount)
 
