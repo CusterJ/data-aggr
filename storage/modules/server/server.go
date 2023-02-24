@@ -133,6 +133,7 @@ func (s *Server) GetStats(ctx context.Context, in *pb.GetStatsRequest) (*pb.GetS
 				Buckets:                 sb,
 			},
 		})
+		sb = nil
 	}
 
 	pbres.Aggrs = &pb.Aggrs{
